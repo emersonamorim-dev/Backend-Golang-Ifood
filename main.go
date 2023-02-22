@@ -32,6 +32,7 @@ if err != nil {
 
 	router := gin.Default()
 	router.POST("/solicitar-pedido", solicitarPedidoHandler)
+	router.GET("/pedidos", listarPedidosHandler)	
 	if err := router.Run(":8080"); err != nil {
 		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
 	}
