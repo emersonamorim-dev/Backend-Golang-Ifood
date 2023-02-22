@@ -32,7 +32,8 @@ if err != nil {
 
 	router := gin.Default()
 	router.POST("/solicitar-pedido", solicitarPedidoHandler)
-	router.GET("/pedidos", listarPedidosHandler)	
+	router.GET("/pedidos", listarPedidosHandler)
+	router.POST("/pagamentos", criarPagamentoHandler)
 	if err := router.Run(":8080"); err != nil {
 		fmt.Printf("Erro ao iniciar o servidor: %v\n", err)
 	}
@@ -153,6 +154,69 @@ if err != nil {
 	return
 }
 
+func criarPagamentoHandler(c *gin.Context) {
+    // Decodifica o corpo da requisição JSON em uma struct Pagamento
+    var pagamento Pagamento
+    if err := c.ShouldBindJSON(&pagamento); err != nil {
+        c.AbortWithError(http.StatusBadRequest, err)
+        return
+    }
+
+    // Verifica se o ID do pedido é válido
+    if !pedidoIDValido(pagamento.PedidoID) {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Pedido inválido"})
+        return
+    }
+
+    // Verifica se o método de pagamento é válido
+    if !metodoPagamentoValido(pagamento.Metodo) {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Método de pagamento inválido"})
+        return
+    }
+
+    // Verifica se o valor do pagamento é válido
+    if !valorPagamentoValido(pagamento.Valor) {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Valor de pagamento inválido"})
+        return
+    }
+
+    // Cria o novo pagamento
+    novoPagamento := Pagamento{
+        ID:        gerarIDPagamento(),
+        PedidoID:  pagamento.PedidoID,
+        Metodo:    pagamento.Metodo,
+        Valor:     pagamento.Valor,
+        Status:    "pendente",
+        CriadoEm:  time.Now().Format(time.RFC3339),
+        AtualizadoEm: "",
+    }
+
+    // Adiciona o novo pagamento à lista de pagamentos
+    pagamentos = append(pagamentos, novoPagamento)
+
+    // Atualiza o status do pedido para "em processamento"
+    atualizarStatusPedido(pagamento.PedidoID, "em processamento")
+
+    // Retorna a resposta para o cliente
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Pagamento criado com sucesso!",
+        "data":    novoPagamento,
+    })
+}
+
+func listarPagamentosHandler(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "data": pagamentos,
+    })
+}
+func pedidoIDValido(pedidoID int) bool {
+    for _, pedido := range pedidos {
+        if pedido.ID == pedidoID {
+            return true
+        }
+    }
+}
+
 type Restaurante struct {
 	ID       int    `json:"id"`
 	Nome     string `json:"nome"`
@@ -162,8 +226,13 @@ type Restaurante struct {
 }
 
 type Pagamento struct {
-	Method string `json:"method"`
-	Amount int    `json:"amount"`
+    ID        int     `json:"id"`
+    PedidoID  int     `json:"pedido_id"`
+    Metodo    string  `json:"metodo"`
+    Valor     float64 `json:"valor"`
+    Status    string  `json:"status"`
+    CriadoEm  string  `json:"criado_em"`
+    AtualizadoEm string `json:"atualizado_em"`
 }
 
 type PedidoResponse struct {
