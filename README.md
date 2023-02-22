@@ -5,6 +5,7 @@ da API.
 
 # Solicitação de Pedido:
 http://localhost:8080/solicitar-pedido
+http://localhost:8080/pedidos
 
 #Rode o comando subir a imagem:
 docker build -t backend-golang-ifood
