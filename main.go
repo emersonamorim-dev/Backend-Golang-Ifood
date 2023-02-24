@@ -22,10 +22,10 @@ var (
 	return
 	}
 
-// Cria um cliente para a API do Google Maps
-var err error
-client, err = maps.NewClient(maps.WithAPIKey(apiKey))
-if err != nil {
+       // Cria um cliente para a API do Google Maps
+        var err error
+        client, err = maps.NewClient(maps.WithAPIKey(apiKey))
+        if err != nil {
 	fmt.Printf("Erro ao criar cliente para a API do Google Maps: %v\n", err)
 	return
 }
@@ -39,19 +39,19 @@ if err != nil {
 	}
 }
 
-// Definição da struct de Pedido
-type Pedido struct {
+       // Definição da struct de Pedido
+        type Pedido struct {
 	ID int json:"id"
 	Cliente string json:"cliente" validate:"required"
 	Endereco string json:"endereco" validate:"required"
 	Items []string json:"items" validate:"required"
 	}
 	
-// Handler para a rota de solicitação de pedido
-func solicitarPedidoHandler(c *gin.Context) {
-    // Decodifica o corpo da requisição JSON em uma struct Pedido
-    var pedido Pedido
-    if err := c.ShouldBindJSON(&pedido); err != nil {
+       // Handler para a rota de solicitação de pedido
+      func solicitarPedidoHandler(c *gin.Context) {
+      // Decodifica o corpo da requisição JSON em uma struct Pedido
+      var pedido Pedido
+      if err := c.ShouldBindJSON(&pedido); err != nil {
         c.AbortWithError(http.StatusBadRequest, err)
         return
     }
@@ -119,42 +119,42 @@ func solicitarPedidoHandler(c *gin.Context) {
     })
 }
 
- // Verifica se o cliente já existe
-cliente, err := buscarClienteNoBancoDeDados(pedido.Cliente)
-if err != nil || cliente == nil {
+   // Verifica se o cliente já existe
+   cliente, err := buscarClienteNoBancoDeDados(pedido.Cliente)
+   if err != nil || cliente == nil {
 	c.JSON(http.StatusBadRequest, gin.H{"error": "Cliente não encontrado"})
 	return
 }
 
-// Verifica se o endereço já existe
-if pedido.Endereco == "" {
+    // Verifica se o endereço já existe
+   if pedido.Endereco == "" {
 	c.JSON(http.StatusBadRequest, gin.H{"error": "Endereço não encontrado"})
 	return
 }
 
-// Calcula o valor total do pedido
-var valorTotal float64
-for _, item := range pedido.Items {
+   // Calcula o valor total do pedido
+   var valorTotal float64
+   for _, item := range pedido.Items {
 	valorTotal += buscarValorItemNoBancoDeDados(item)
 }
 
-valorTotal = valorTotal / float64(len(pedido.Items))
+   valorTotal = valorTotal / float64(len(pedido.Items))
 
-// Gera o payload Pix para o pagamento do pedido
-payload, err := pixpayload.PagamentoPayload{
+   // Gera o payload Pix para o pagamento do pedido
+   payload, err := pixpayload.PagamentoPayload{
 	PixKey:       "sua_chave_pix",
 	Description:  "Pagamento do pedido",
 	MerchantName: "Nome do seu estabelecimento",
 	Amount:       valorTotal,
 	TxID:         "id_da_transacao",
-}.Payload()
+    }.Payload()
 
-if err != nil {
+    if err != nil {
 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	return
 }
 
-func criarPagamentoHandler(c *gin.Context) {
+    func criarPagamentoHandler(c *gin.Context) {
     // Decodifica o corpo da requisição JSON em uma struct Pagamento
     var pagamento Pagamento
     if err := c.ShouldBindJSON(&pagamento); err != nil {
@@ -204,12 +204,12 @@ func criarPagamentoHandler(c *gin.Context) {
     })
 }
 
-func listarPagamentosHandler(c *gin.Context) {
+    func listarPagamentosHandler(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{
         "data": pagamentos,
     })
 }
-func pedidoIDValido(pedidoID int) bool {
+    func pedidoIDValido(pedidoID int) bool {
     for _, pedido := range pedidos {
         if pedido.ID == pedidoID {
             return true
@@ -217,7 +217,7 @@ func pedidoIDValido(pedidoID int) bool {
     }
 }
 
-type Restaurante struct {
+     type Restaurante struct {
 	ID       int    `json:"id"`
 	Nome     string `json:"nome"`
 	Endereco string `json:"endereco"`
@@ -225,7 +225,7 @@ type Restaurante struct {
 	Distancia int    `json:"distancia"`
 }
 
-type Pagamento struct {
+    type Pagamento struct {
     ID        int     `json:"id"`
     PedidoID  int     `json:"pedido_id"`
     Metodo    string  `json:"metodo"`
@@ -235,17 +235,17 @@ type Pagamento struct {
     AtualizadoEm string `json:"atualizado_em"`
 }
 
-type PedidoResponse struct {
+    type PedidoResponse struct {
 	ID          int         `json:"id"`
 	Restaurante Restaurante `json:"restaurante"`
 	Items       []string    `json:"items"`
 	Total       float64     `json:"total"`
 	Pagamento   Pagamento   `json:"pagamento"`
 }
-var pedidos []Pedidos
+     var pedidos []Pedidos
 
-// Simula a consulta a uma API de mapas para obter restaurantes próximos
-func getRestaurante(w http.ResponseWriter, r *http.Request) {
+    // Simula a consulta a uma API de mapas para obter restaurantes próximos
+    func getRestaurante(w http.ResponseWriter, r *http.Request) {
 	restaurantes := []Restaurante{
 		{
 			ID:       1,
@@ -274,7 +274,7 @@ func getRestaurante(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(restaurants)
 }
-func solicitarPedidoHandler(c *gin.Context) {
+        func solicitarPedidoHandler(c *gin.Context) {
 	// Decodifica o corpo da requisição JSON em uma struct Pedido
 	var pedido Pedido
 	if err := c.ShouldBindJSON(&pedido); err != nil {
@@ -309,7 +309,7 @@ func solicitarPedidoHandler(c *gin.Context) {
 }
 
 
-func createpedido(w http.ResponseWriter, r *http.Request) {
+        func createpedido(w http.ResponseWriter, r *http.Request) {
 	// Simula a criação de um pedido com Pix como forma de pagamento
 	var pedido pedido
 	json.NewDecoder(r.Body).Decode(&pedido)
@@ -323,8 +323,8 @@ func createpedido(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(pedido)
 }
 
-// Obtém o ID do pedido a partir dos parâmetros da URL
-func getpedido(w http.ResponseWriter, r *http.Request) {
+        // Obtém o ID do pedido a partir dos parâmetros da URL
+        func getpedido(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
